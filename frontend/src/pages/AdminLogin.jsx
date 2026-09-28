@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
-import { loginAdmin, getCurrentUser, setToken } from "../lib/api";
+import { loginAdmin, getCurrentUser } from "../lib/api";
 import Logo from "../components/Logo";
 import SEO from "../components/SEO";
 
@@ -15,7 +15,6 @@ const AdminLogin = () => {
   useEffect(() => {
     getCurrentUser().then((user) => {
       if (user) {
-        setToken(user.$id);
         navigate("/admin");
       }
     });
@@ -26,8 +25,7 @@ const AdminLogin = () => {
     setError("");
     setLoading(true);
     try {
-      const { user } = await loginAdmin(email, password);
-      setToken(user.$id);
+      await loginAdmin(email, password);
       navigate("/admin");
     } catch (err) {
       setError(err.message || "Login failed. Check your credentials.");

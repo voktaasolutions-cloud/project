@@ -698,6 +698,65 @@ async def seed_admin():
             await UserRepository.update_password(None, email, hash_password(admin_password))
             logger.info("Admin password updated: %s", email)
 
+    # Seed initial baseline reviews if missing
+    try:
+        existing_reviews = await ReviewRepository.list_public(None, limit=200)
+        existing_names = {r.name.lower().strip() for r in existing_reviews if getattr(r, 'name', None)}
+        initial_data = [
+            {
+                "name": "Tejasri Penubothu",
+                "role": "Student",
+                "organisation": "Student",
+                "program": "Soft Skills Development",
+                "rating": 5,
+                "review": "I started using VOKTAA Solutions last week to improve my communication skills, leadership qualities, and interview skills. The training sessions are engaging, well-organized, and easy to understand. The trainers explain every concept clearly with practical examples, which has helped me build confidence. Whenever I had a question, the support team responded quickly and was very helpful. Overall, it has been a great learning experience, and I highly recommend VOKTAA Solutions to anyone looking to improve their soft skills.",
+                "status": "approved"
+            },
+            {
+                "name": "Sahithi Srinivas S",
+                "role": "Student",
+                "organisation": "Student",
+                "program": "Campus Recruitment Training",
+                "rating": 5,
+                "review": "I started using VOKTAA Solutions last week to fix my communication skills, leadership qualities and Interview Tips. The app is very clean and fast. When I had a question, their online/offline sessions helped my interviews and the support team replied in minutes. Highly recommend.",
+                "status": "approved"
+            },
+            {
+                "name": "N Venkata Bhargavi",
+                "role": "Student",
+                "organisation": "Student",
+                "program": "Communication Skills",
+                "rating": 5,
+                "review": "This session will definitely be useful for those who want to build a strong foundation on communication skills and also boost them with confidence to face the interviews. I learned a lot of tips which helped me in my interviews.",
+                "status": "approved"
+            },
+            {
+                "name": "Anumula Abhinaya",
+                "role": "Student",
+                "organisation": "Student",
+                "program": "Public Speaking & Debate",
+                "rating": 5,
+                "review": "The session was very useful and interactive. I learned many things that will help me improve my communication and confidence.",
+                "status": "approved"
+            },
+            {
+                "name": "VOKTAA Student",
+                "role": "Student",
+                "organisation": "Student",
+                "program": "Soft Skills & Communication",
+                "rating": 5,
+                "review": "I joined the program to improve my communication skills, but I gained much more than that. It helped me become more confident, improve my body language, and interact professionally with others.",
+                "status": "approved"
+            }
+        ]
+        for rev in initial_data:
+            if rev["name"].lower().strip() not in existing_names:
+                await ReviewRepository.create(None, rev)
+                logger.info("Seeded missing baseline review: %s", rev["name"])
+    except Exception as rev_err:
+        logger.warning("Seed initial reviews notice: %s", rev_err)
+
+
 
 @app.on_event("startup")
 async def on_startup():

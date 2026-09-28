@@ -23,8 +23,13 @@ export async function getPublicReviews() {
     const contentType = res.headers.get("content-type") || "";
     if (res.ok && contentType.includes("application/json")) {
       const data = await res.json();
-      if (Array.isArray(data) && data.length > 0) {
-        return data.filter(isRealReview);
+      if (Array.isArray(data)) {
+        const real = data.filter(isRealReview);
+        const dbNames = new Set(real.map((r) => r.name?.toLowerCase().trim()));
+        const missingFallbacks = INITIAL_FALLBACK_REVIEWS.filter(
+          (fb) => !dbNames.has(fb.name.toLowerCase().trim())
+        );
+        return [...real, ...missingFallbacks];
       }
     }
   } catch (backendErr) {
@@ -97,7 +102,14 @@ export async function getAllReviewsAdmin() {
       });
       const contentType = res.headers.get("content-type") || "";
       if (res.ok && contentType.includes("application/json")) {
-        return await res.json();
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          const dbNames = new Set(data.map((r) => r.name?.toLowerCase().trim()));
+          const missingFallbacks = INITIAL_FALLBACK_REVIEWS.filter(
+            (fb) => !dbNames.has(fb.name.toLowerCase().trim())
+          );
+          return [...data, ...missingFallbacks];
+        }
       }
     }
   } catch (err) {
