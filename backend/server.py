@@ -698,10 +698,18 @@ async def seed_admin():
             await UserRepository.update_password(None, email, hash_password(admin_password))
             logger.info("Admin password updated: %s", email)
 
-    # Seed initial baseline reviews if missing
+    # Deduplicate existing reviews in DB & seed missing baseline reviews
     try:
+        deleted_count = await ReviewRepository.deduplicate(None)
+        if deleted_count > 0:
+            logger.info("Deduplicated database reviews: removed %d duplicate rows", deleted_count)
+
         existing_reviews = await ReviewRepository.list_public(None, limit=200)
-        existing_names = {r.name.lower().strip() for r in existing_reviews if getattr(r, 'name', None)}
+        existing_names = {
+            r.get("name", "").lower().strip()
+            for r in existing_reviews
+            if isinstance(r, dict) and r.get("name")
+        }
         initial_data = [
             {
                 "name": "Tejasri Penubothu",

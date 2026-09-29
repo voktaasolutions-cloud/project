@@ -145,3 +145,27 @@ class ReviewRepository:
             ok = await _run(s)
             await s.commit()
             return ok
+
+    @staticmethod
+    async def deduplicate(session: Optional[AsyncSession]) -> int:
+        async def _run(s: AsyncSession):
+            stmt = select(ReviewModel).order_by(ReviewModel.timestamp.asc())
+            res = await s.execute(stmt)
+            rows = res.scalars().all()
+            seen = set()
+            deleted_count = 0
+            for r in rows:
+                key = ((r.name or "").strip().lower(), (r.review or "").strip().lower())
+                if key in seen:
+                    await s.delete(r)
+                    deleted_count += 1
+                else:
+                    seen.add(key)
+            return deleted_count
+
+        if session:
+            return await _run(session)
+        async with AsyncSessionLocal() as s:
+            count = await _run(s)
+            await s.commit()
+            return count

@@ -1,7 +1,7 @@
 import { trackEvent, trackVisit, trackClick, getAnalyticsData } from "./events";
 import { loginAdmin, logoutAdmin, getCurrentUser, isAuthenticated } from "./auth";
 import { createEnquiry, getEnquiries } from "./enquiries";
-import { getPublicReviews, submitReview, getAllReviewsAdmin, updateReviewStatus, deleteReview } from "./reviews";
+import { getPublicReviews, submitReview, getAllReviewsAdmin, updateReviewStatus, deleteReview, INITIAL_FALLBACK_REVIEWS, dedupeReviews } from "./reviews";
 import { getSiteSettings, updateSiteSettings } from "./settings";
 import { uploadMedia, getMediaViewUrl, deleteMedia } from "./storage";
 import {
@@ -56,6 +56,8 @@ export {
   getAllReviewsAdmin,
   updateReviewStatus,
   deleteReview,
+  INITIAL_FALLBACK_REVIEWS,
+  dedupeReviews,
   getSiteSettings,
   updateSiteSettings,
   uploadMedia,

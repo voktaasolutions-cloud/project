@@ -1,4 +1,4 @@
-const INITIAL_FALLBACK_REVIEWS = [
+export const INITIAL_FALLBACK_REVIEWS = [
   { id: "r1", name: "Tejasri Penubothu", role: "Student", organisation: "Student", program: "Soft Skills Development", rating: 5, review: "I started using VOKTAA Solutions last week to improve my communication skills, leadership qualities, and interview skills. The training sessions are engaging, well-organized, and easy to understand. The trainers explain every concept clearly with practical examples, which has helped me build confidence. Whenever I had a question, the support team responded quickly and was very helpful. Overall, it has been a great learning experience, and I highly recommend VOKTAA Solutions to anyone looking to improve their soft skills.", status: "approved" },
   { id: "r2", name: "Sahithi Srinivas S", role: "Student", organisation: "Student", program: "Campus Recruitment Training", rating: 5, review: "I started using VOKTAA Solutions last week to fix my communication skills, leadership qualities and Interview Tips. The app is very clean and fast. When I had a question, their online/offline sessions helped my interviews and the support team replied in minutes. Highly recommend.", status: "approved" },
   { id: "r3", name: "N Venkata Bhargavi", role: "Student", organisation: "Student", program: "Communication Skills", rating: 5, review: "This session will definitely be useful for those who want to build a strong foundation on communication skills and also boost them with confidence to face the interviews. I learned a lot of tips which helped me in my interviews.", status: "approved" },
@@ -7,6 +7,20 @@ const INITIAL_FALLBACK_REVIEWS = [
 ];
 
 const IGNORED_TEST_REVIEWS = new Set(["good", "nice", "test", "demo", "sample", "hii", "hello"]);
+
+export function dedupeReviews(list) {
+  if (!Array.isArray(list)) return [];
+  const seen = new Set();
+  return list.filter((r) => {
+    if (!r) return false;
+    const nameKey = (r.name || "").trim().toLowerCase();
+    const reviewKey = (r.review || "").trim().toLowerCase();
+    const key = `${nameKey}|${reviewKey}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 function isRealReview(r) {
   if (!r || !r.review) return false;
@@ -25,18 +39,15 @@ export async function getPublicReviews() {
       const data = await res.json();
       if (Array.isArray(data)) {
         const real = data.filter(isRealReview);
-        const dbNames = new Set(real.map((r) => r.name?.toLowerCase().trim()));
-        const missingFallbacks = INITIAL_FALLBACK_REVIEWS.filter(
-          (fb) => !dbNames.has(fb.name.toLowerCase().trim())
-        );
-        return [...real, ...missingFallbacks];
+        const combined = [...real, ...INITIAL_FALLBACK_REVIEWS];
+        return dedupeReviews(combined);
       }
     }
   } catch (backendErr) {
     console.warn("Fetch backend reviews notice:", backendErr);
   }
 
-  return INITIAL_FALLBACK_REVIEWS;
+  return dedupeReviews(INITIAL_FALLBACK_REVIEWS);
 }
 
 export async function submitReview(data) {
@@ -104,11 +115,8 @@ export async function getAllReviewsAdmin() {
       if (res.ok && contentType.includes("application/json")) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          const dbNames = new Set(data.map((r) => r.name?.toLowerCase().trim()));
-          const missingFallbacks = INITIAL_FALLBACK_REVIEWS.filter(
-            (fb) => !dbNames.has(fb.name.toLowerCase().trim())
-          );
-          return [...data, ...missingFallbacks];
+          const combined = [...data, ...INITIAL_FALLBACK_REVIEWS];
+          return dedupeReviews(combined);
         }
       }
     }
@@ -116,7 +124,7 @@ export async function getAllReviewsAdmin() {
     console.warn("Fetch backend admin reviews notice:", err);
   }
 
-  return INITIAL_FALLBACK_REVIEWS;
+  return dedupeReviews(INITIAL_FALLBACK_REVIEWS);
 }
 
 export async function updateReviewStatus(id, status) {

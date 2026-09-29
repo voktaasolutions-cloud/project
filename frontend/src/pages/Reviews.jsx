@@ -7,7 +7,7 @@ import {
 } from "../components/ui/select";
 import { Reveal, StaggerGroup, StaggerItem } from "../components/Reveal";
 import { SectionLabel, PageHero, StagePedestalDisc } from "../components/shared";
-import { getPublicReviews, submitReview } from "../lib/api";
+import { getPublicReviews, submitReview, INITIAL_FALLBACK_REVIEWS } from "../lib/api";
 import SEO from "../components/SEO";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { PAGE_SEO, ORGANIZATION_SCHEMA, PRIMARY_ORG_ID } from "../data/seoData";
@@ -69,10 +69,10 @@ const ReviewCard = ({ r }) => (
 const Reviews = () => {
   useEffect(() => { document.title = "Student & Partner Reviews | VOKTAA Solutions"; }, []);
 
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(INITIAL_FALLBACK_REVIEWS);
   const [activeTab, setActiveTab] = useState("all");
   const [visible, setVisible] = useState(6);
-  const [loadingList, setLoadingList] = useState(true);
+  const [loadingList, setLoadingList] = useState(false);
 
   const empty = { name: "", email: "", phone: "", role: "", organisation: "", program: "", rating: 5, review: "" };
   const [form, setForm] = useState(empty);
@@ -101,14 +101,13 @@ const Reviews = () => {
   } : null;
 
   const load = async () => {
-    setLoadingList(true);
     try {
       const data = await getPublicReviews();
-      setReviews(data);
+      if (Array.isArray(data) && data.length > 0) {
+        setReviews(data);
+      }
     } catch {
       /* silent catch handled by getPublicReviews fallback */
-    } finally {
-      setLoadingList(false);
     }
   };
 
