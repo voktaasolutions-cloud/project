@@ -40,31 +40,38 @@ const Stars = ({ value = 5, onChange, size = 20, testid }) => {
   );
 };
 
-const ReviewCard = ({ r }) => (
-  <div className="card-purple bg-white/90 backdrop-blur-2xl border-2 border-white/95 p-7 md:p-8 h-full rounded-3xl shadow-[0_20px_45px_rgba(108,92,231,0.12)] hover:shadow-[0_30px_60px_rgba(108,92,231,0.22)] hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group" data-testid={`review-card-${r.id}`}>
-    <div>
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <Stars value={r.rating} size={18} />
-        <span className="font-mono text-[10px] uppercase tracking-wider text-purple-900 bg-purple-100/90 font-bold px-3 py-1 rounded-full shadow-inner">
-          {r.role || "Student"}
-        </span>
-      </div>
-      <p className="font-medium text-purple-950 text-base sm:text-lg leading-relaxed text-left mt-2">
-        "{r.review}"
-      </p>
-    </div>
+const ReviewCard = ({ r }) => {
+  const roleText = r.role || "Student";
+  const orgText = r.organisation && r.organisation.toLowerCase() !== "student" && r.organisation.toLowerCase() !== roleText.toLowerCase() ? r.organisation : "";
+  const subtitle = orgText ? `${roleText} · ${orgText}` : roleText;
+  const badgeText = r.program || roleText;
 
-    <div className="mt-6 pt-5 border-t border-purple-100/80 flex items-center justify-between gap-3 flex-wrap">
+  return (
+    <div className="card-purple bg-white/90 backdrop-blur-2xl border-2 border-white/95 p-7 md:p-8 h-full rounded-3xl shadow-[0_20px_45px_rgba(108,92,231,0.12)] hover:shadow-[0_30px_60px_rgba(108,92,231,0.22)] hover:-translate-y-2 transition-all duration-300 flex flex-col justify-between group" data-testid={`review-card-${r.id}`}>
       <div>
-        <p className="font-heading font-extrabold text-purple-950 text-base">{r.name}</p>
-        <p className="text-purple-900/70 text-xs font-semibold mt-0.5">{r.organisation || r.program || "VOKTAA Learner"}</p>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <Stars value={r.rating} size={18} />
+          <span className="font-mono text-[10px] uppercase tracking-wider text-purple-900 bg-purple-100/90 font-bold px-3 py-1 rounded-full shadow-inner max-w-[160px] truncate">
+            {badgeText}
+          </span>
+        </div>
+        <p className="font-medium text-purple-950 text-base sm:text-lg leading-relaxed text-left mt-2">
+          "{r.review}"
+        </p>
       </div>
-      <div className="w-8 h-8 rounded-full bg-purple-100/80 text-purple-600 flex items-center justify-center font-heading font-bold text-xs shadow-inner">
-        {r.name ? r.name.charAt(0).toUpperCase() : "V"}
+
+      <div className="mt-6 pt-5 border-t border-purple-100/80 flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p className="font-heading font-extrabold text-purple-950 text-base">{r.name}</p>
+          <p className="text-purple-900/70 text-xs font-semibold mt-0.5">{subtitle}</p>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-purple-100/80 text-purple-600 flex items-center justify-center font-heading font-bold text-xs shadow-inner shrink-0">
+          {r.name ? r.name.charAt(0).toUpperCase() : "V"}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const Reviews = () => {
   useEffect(() => { document.title = "Student & Partner Reviews | VOKTAA Solutions"; }, []);
