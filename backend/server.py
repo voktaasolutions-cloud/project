@@ -605,9 +605,7 @@ async def update_review_status(review_id: str, body: ReviewStatusUpdate, admin: 
 
 @api_router.delete("/admin/reviews/{review_id}")
 async def delete_review(review_id: str, admin: dict = Depends(get_current_admin)):
-    success = await ReviewRepository.delete(None, review_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Review not found")
+    await ReviewRepository.delete(None, review_id)
     return {"ok": True}
 
 

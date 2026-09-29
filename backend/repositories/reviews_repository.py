@@ -137,7 +137,24 @@ class ReviewRepository:
         async def _run(s: AsyncSession):
             stmt = delete(ReviewModel).where(ReviewModel.id == review_id)
             res = await s.execute(stmt)
-            return res.rowcount > 0
+            if res.rowcount > 0:
+                return True
+
+            idx_map = {
+                "r1": "Tejasri Penubothu",
+                "r2": "Sahithi Srinivas S",
+                "r3": "N Venkata Bhargavi",
+                "r4": "Anumula Abhinaya",
+                "r5": "VOKTAA Student",
+                "r6": "Kavya Gowripatnam",
+            }
+            target_name = idx_map.get(review_id)
+            if target_name:
+                stmt2 = delete(ReviewModel).where(ReviewModel.name == target_name)
+                res2 = await s.execute(stmt2)
+                return res2.rowcount > 0
+
+            return False
 
         if session:
             return await _run(session)

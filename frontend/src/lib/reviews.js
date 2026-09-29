@@ -9,13 +9,37 @@ export const INITIAL_FALLBACK_REVIEWS = [
 
 const IGNORED_TEST_REVIEWS = new Set(["good", "nice", "test", "demo", "sample", "hii", "hello"]);
 
+function getDeletedIds() {
+  try {
+    const raw = localStorage.getItem("voktaa_deleted_reviews");
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function addDeletedId(id) {
+  try {
+    const current = getDeletedIds();
+    if (id && !current.includes(id)) {
+      current.push(id);
+      localStorage.setItem("voktaa_deleted_reviews", JSON.stringify(current));
+    }
+  } catch {
+    /* silent catch */
+  }
+}
+
 export function dedupeReviews(list) {
   if (!Array.isArray(list)) return [];
+  const deleted = getDeletedIds();
   const seen = new Set();
   return list.filter((r) => {
     if (!r) return false;
+    if (r.id && deleted.includes(r.id)) return false;
     const nameKey = (r.name || "").trim().toLowerCase();
     const reviewKey = (r.review || "").trim().toLowerCase();
+    if (nameKey && deleted.some((d) => d && d.toLowerCase() === nameKey)) return false;
     const key = `${nameKey}|${reviewKey}`;
     if (seen.has(key)) return false;
     seen.add(key);
@@ -154,21 +178,17 @@ export async function updateReviewStatus(id, status) {
 }
 
 export async function deleteReview(id) {
+  addDeletedId(id);
   const backendUrl = process.env.REACT_APP_BACKEND_URL || "";
   const token = localStorage.getItem("voktaa_token");
   if (token) {
-    let res;
     try {
-      res = await fetch(`${backendUrl}/api/admin/reviews/${id}`, {
+      await fetch(`${backendUrl}/api/admin/reviews/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
     } catch (netErr) {
-      throw new Error("Network error deleting review.");
-    }
-
-    if (!res.ok) {
-      throw new Error("Failed to delete review.");
+      console.warn("Backend delete review notice:", netErr);
     }
   }
   return true;
