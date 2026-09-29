@@ -232,13 +232,13 @@ const Reviews = () => {
             <p className="text-purple-950 font-bold text-center font-mono text-sm">Loading verified database reviews…</p>
           ) : (
             <>
-              <StaggerGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {shown.map((r, idx) => (
-                  <StaggerItem key={r.id || idx}>
+                  <div key={r.id || `rev_${idx}`}>
                     <ReviewCard r={r} />
-                  </StaggerItem>
+                  </div>
                 ))}
-              </StaggerGroup>
+              </div>
 
               {filteredReviews.length > visible && (
                 <div className="text-center mt-12">
